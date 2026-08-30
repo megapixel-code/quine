@@ -1,10 +1,8 @@
-#include <bits/posix2_lim.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TEXT_WIDTH 20
+#define TEXT_WIDTH 50
 
 typedef struct {
    char  *content;
@@ -20,7 +18,12 @@ void String_init(String *s)
    s->content[0] = '\0';
 }
 
-void String_append(String *s, char *c)
+#define String_append(string, content)            \
+   _Generic((content),                            \
+      char *: _String_append_str,                 \
+      char: _String_append_char)(string, content)
+
+void _String_append_str(String *s, char *c)
 {
    for ( int i = 0; c[i] != '\0'; i++ ) {
       if ( s->position >= s->size - 1 ) {
@@ -32,6 +35,15 @@ void String_append(String *s, char *c)
       s->position++;
       s->content[s->position] = '\0';
    }
+}
+
+void _String_append_char(String *s, char c)
+{
+   char *temp = malloc(sizeof(char) * 2); // one for our char + one null byte
+   temp[0]    = c;
+   temp[1]    = '\0';
+   _String_append_str(s, temp);
+   free(temp);
 }
 
 bool char_in_str(char c, const char *s)
@@ -80,15 +92,23 @@ void String_format(String *s)
                skip_newline = false;
             }
             break;
+         case '\\':
+            if ( s->content[i + 1] == '\n' ) {
+               i++;
+               continue;
+            }
+            break;
          case '\n':
             if ( line_pos > TEXT_WIDTH ) {
                skip_newline = false;
-               line_pos     = 0;
             }
 
-            if ( skip_newline ) {
+            bool should_newline_prev_line =
+               (s->content[i + 1] == '#') && (line_pos > 1);
+            if ( skip_newline && !should_newline_prev_line ) {
                continue;
             } else {
+               line_pos     = 0;
                skip_newline = true;
             }
             break;
@@ -109,8 +129,6 @@ void get_self(String *s)
 {
    const char *src = "?";
 
-   char *my_char = malloc(sizeof(char) * 2); // one for our char + one null byte
-   my_char[1]    = '\0';
    for ( int i = 0; src[i] != '\0'; i++ ) {
       if ( src[i] == 63 ) {
          for ( int j = 0; src[j] != '\0'; j++ ) {
@@ -124,17 +142,14 @@ void get_self(String *s)
                   break;
                DEFAULT:
                default:
-                  my_char[0] = src[j];
-                  String_append(s, my_char);
+                  String_append(s, src[j]);
                   break;
             }
          }
       } else {
-         my_char[0] = src[i];
-         String_append(s, my_char);
+         String_append(s, src[i]);
       }
    }
-   free(my_char);
 }
 
 int main(int argc, char *argv[])
