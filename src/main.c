@@ -23,21 +23,23 @@ void String_add_newlines(String *s)
       line_count++;
 
       switch ( s->content[i] ) {
-         case '#':
+         case '#': {
             if ( s->content[i - 1] == '\n' ) {
                in_tag = true;
             }
-            break;
-         case '\n':
+         } break;
+         case '\n': {
             line_count = 0;
             in_tag     = false;
             continue;
-         case '"':
+         }
+         case '"': {
             if ( s->content[i - 1] == '\\' || s->content[i - 1] == '\'' ) {
                break;
             }
             in_string = !in_string;
             continue; // we do not want to add newline
+         }
       }
 
       if ( line_count < TEXT_WIDTH ) {
@@ -92,9 +94,9 @@ void get_self(String *s)
 
       for ( int j = 0; temp.content[j] != '\0'; j++ ) {
          switch ( temp.content[j] ) {
-            case '\n':
+            case '\n': {
                String_append(s, "\\n");
-               break;
+            } break;
             case '\\':
             case '"':
                String_append(s, (char)'\\');

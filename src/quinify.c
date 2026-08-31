@@ -36,7 +36,7 @@ void String_remove_spaces(String *s)
    bool in_quotes = false;
    for ( i = 1; i < s->last_elmt - 1; i++ ) {
       switch ( s->content[i] ) {
-         case ' ':
+         case ' ': {
             if ( in_quotes ) {
                break;
             }
@@ -46,20 +46,20 @@ void String_remove_spaces(String *s)
                i--;
                continue;
             }
-            break;
-         case '"':
+         } break;
+         case '"': {
             if ( s->content[i - 1] == '\\' || s->content[i - 1] == '\'' ) {
                break;
             }
             in_quotes = !in_quotes;
-            break;
-         case '#':
+         } break;
+         case '#': {
             if ( s->content[i - 1] != '\n' ) {
                break;
             }
             in_tag = true;
-            break;
-         case '\n':
+         } break;
+         case '\n': {
             if ( in_tag ) {
                in_tag = false;
                while ( s->content[i] == '\n' ) {
@@ -75,15 +75,16 @@ void String_remove_spaces(String *s)
             String_remove_char(s, i);
             i--;
             continue;
-         case '\\':
+         }
+         case '\\': {
             if ( s->content[i + 1] == '\n' ) {
                String_remove_char(s, i);
                String_remove_char(s, i);
                i--;
                continue;
             }
-            break;
-         case '/':
+         } break;
+         case '/': {
             if ( s->content[i + 1] == '/' ) {
                while ( s->content[i] != '\n' ) {
                   String_remove_char(s, i);
@@ -92,7 +93,7 @@ void String_remove_spaces(String *s)
                i--;
                continue;
             }
-            break;
+         } break;
       }
 
       s->content[position] = s->content[i];
@@ -145,10 +146,10 @@ void String_get_quine(String *s)
    String_remove_char(s, insert_pos);
    for ( int i = 0; temp.content[i] != '\0'; i++ ) {
       switch ( temp.content[i] ) {
-         case '\n':
+         case '\n': {
             String_insert(s, insert_pos, "\\n");
             insert_pos += 2;
-            break;
+         } break;
          case '\\':
          case '"':
             String_insert(s, insert_pos, (char)'\\');
