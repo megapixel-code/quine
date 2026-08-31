@@ -10,7 +10,7 @@ typedef struct {
    bool strict; // check if the strings end in the same place
 } _same_str_opts;
 
-#define same_str_opt(buffer, pattern, ...)                     \
+#define same_str(buffer, pattern, ...)                         \
    _same_str(buffer, pattern, (_same_str_opts){ __VA_ARGS__ })
 
 bool _same_str(char *buffer, char *pattern, _same_str_opts opts)
@@ -27,12 +27,6 @@ bool _same_str(char *buffer, char *pattern, _same_str_opts opts)
       }
    }
    return true;
-}
-
-bool same_str(char *buffer, char *pattern)
-{
-   _same_str_opts temp;
-   return _same_str(buffer, pattern, temp);
 }
 
 void String_remove_char(String *s, int pos)
@@ -145,12 +139,12 @@ void String_append_file(String *s, char *path, bool is_lib)
    if ( is_lib ) {
       do {
          getline(&buffer, &buf_size, f);
-      } while ( !same_str_opt(buffer, "#pragma once", .strict = false) );
+      } while ( !same_str(buffer, "#pragma once", .strict = false) );
    }
 
    while ( getline(&buffer, &buf_size, f) != -1 ) {
       if ( !is_lib &&
-           same_str_opt(buffer, "#include \"lib.h\"", .strict = false) ) {
+           same_str(buffer, "#include \"lib.h\"", .strict = false) ) {
          String_append(s, (char)'\n');
          String_append_file(s, LIB_PATH, true);
          continue;
@@ -192,94 +186,6 @@ void String_get_quine(String *s)
 
    String_free(&temp);
 }
-
-// void String_get_quine(String *s, char *path, bool in_src)
-// {
-//    FILE *f = fopen(path, "r");
-//
-//    char  *buffer;
-//    size_t buf_size = 0;
-//
-//    bool in_tag = false;
-//    while ( getline(&buffer, &buf_size, f) != -1 ) {
-//       bool next_line    = false;
-//       bool double_space = false;
-//
-//       for ( size_t i = 0; i < buf_size; i++ ) {
-//          switch ( buffer[i] ) {
-//             case '/':
-//                if ( buffer[i + 1] == '/' ) {
-//                   next_line = true;
-//                   break;
-//                }
-//                goto DEFAULT;
-//                break;
-//
-//             case ' ':
-//                if ( !double_space ) {
-//                   double_space = true;
-//                   printf(" ");
-//                }
-//                break;
-//
-//             case '#':
-//                in_tag = true;
-//                goto DEFAULT;
-//                break;
-//
-//             case '\\':
-//                if ( buffer[i + 1] == '\n' ) {
-//                   i++;
-//                   continue;
-//                }
-//             case '"':
-//                if ( in_src ) {
-//                   printf("\\");
-//                }
-//                goto DEFAULT;
-//                break;
-//
-//             case '?':
-//                if ( in_src ) {
-//                   goto DEFAULT;
-//                } else {
-//                   String temp;
-//                   String_init(&temp);
-//                   String_get_quine(&temp, path, true);
-//                   String_insert(s, position, temp.content);
-//                   String_free(&temp);
-//                }
-//                break;
-//
-//             case '\n':
-//                if ( in_tag ) {
-//                   if ( in_src ) {
-//                      printf("\\n");
-//                   } else {
-//                      printf("\n");
-//                   }
-//                   in_tag = false;
-//                }
-//                break;
-//
-//             case '\0':
-//                next_line = true;
-//                break;
-//
-//             DEFAULT:
-//             default:
-//                printf("%c", buffer[i]);
-//                double_space = false;
-//                break;
-//          }
-//
-//          if ( next_line ) {
-//             break;
-//          }
-//       }
-//    }
-//    fclose(f);
-// }
 
 int main(int argc, char *argv[])
 {
