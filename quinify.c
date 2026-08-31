@@ -8,6 +8,7 @@ void print_quine_file(char *name, bool in_string)
    char  *buffer;
    size_t buf_size = 0;
 
+   bool in_tag = false;
    while ( getline(&buffer, &buf_size, f) != -1 ) {
       bool next_line    = false;
       bool double_space = false;
@@ -26,8 +27,15 @@ void print_quine_file(char *name, bool in_string)
                   printf(" ");
                }
                break;
+            case '#':
+               in_tag = true;
+               goto DEFAULT;
             case '\\':
             case '"':
+               if ( buffer[i + 1] == '\n' ) {
+                  i++;
+                  continue;
+               }
                if ( in_string ) {
                   printf("\\");
                }
@@ -43,7 +51,10 @@ void print_quine_file(char *name, bool in_string)
                if ( in_string ) {
                   printf("\\n");
                } else {
-                  printf("\n");
+                  if ( in_tag ) {
+                     in_tag = false;
+                     printf("\n");
+                  }
                }
                break;
             case '\0':
