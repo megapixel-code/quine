@@ -14,6 +14,11 @@
       char *: _String_insert_str,                           \
       char: _String_insert_char)(string, position, content)
 
+#define same_str(buffer, pattern, ...)                         \
+   _same_str(buffer, pattern, (_same_str_opts){ __VA_ARGS__ })
+
+const char *src = "?";
+
 typedef struct {
    char  *content;
    size_t last_elmt;
@@ -78,6 +83,26 @@ void _String_insert_str(String *s, int pos, char *c)
    for ( int i = 0; c[i] != '\0'; i++ ) {
       _String_insert_char(s, pos + i, c[i]);
    }
+}
+
+typedef struct {
+   bool strict; // check if the strings end in the same place
+} _same_str_opts;
+
+bool _same_str(char *buffer, char *pattern, _same_str_opts opts)
+{
+   int i;
+   for ( i = 0; pattern[i] != '\0'; i++ ) {
+      if ( pattern[i] != buffer[i] ) {
+         return false;
+      }
+   }
+   if ( opts.strict == true ) {
+      if ( pattern[i] != buffer[i] ) {
+         return false;
+      }
+   }
+   return true;
 }
 
 bool char_in_str(char c, const char *s)

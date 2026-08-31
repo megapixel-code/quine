@@ -6,29 +6,6 @@
 #define MAIN_PATH "src/main.c"
 #define LIB_PATH  "src/lib.h"
 
-typedef struct {
-   bool strict; // check if the strings end in the same place
-} _same_str_opts;
-
-#define same_str(buffer, pattern, ...)                         \
-   _same_str(buffer, pattern, (_same_str_opts){ __VA_ARGS__ })
-
-bool _same_str(char *buffer, char *pattern, _same_str_opts opts)
-{
-   int i;
-   for ( i = 0; pattern[i] != '\0'; i++ ) {
-      if ( pattern[i] != buffer[i] ) {
-         return false;
-      }
-   }
-   if ( opts.strict == true ) {
-      if ( pattern[i] != buffer[i] ) {
-         return false;
-      }
-   }
-   return true;
-}
-
 void String_remove_char(String *s, int pos)
 {
    if ( pos >= s->size ) {
@@ -139,12 +116,11 @@ void String_append_file(String *s, char *path, bool is_lib)
    if ( is_lib ) {
       do {
          getline(&buffer, &buf_size, f);
-      } while ( !same_str(buffer, "#pragma once", .strict = false) );
+      } while ( !same_str(buffer, "#pragma once") );
    }
 
    while ( getline(&buffer, &buf_size, f) != -1 ) {
-      if ( !is_lib &&
-           same_str(buffer, "#include \"lib.h\"", .strict = false) ) {
+      if ( !is_lib && same_str(buffer, "#include \"lib.h\"") ) {
          String_append(s, (char)'\n');
          String_append_file(s, LIB_PATH, true);
          continue;

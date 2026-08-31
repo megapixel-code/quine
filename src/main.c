@@ -3,14 +3,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TEXT_WIDTH 60
+#define TEXT_WIDTH    60
+#define NEWLINE_PAIRS 13
 
-const char *src = "?";
 #include "lib.h"
 
 void String_add_newlines(String *s)
 {
-   const char *add_newlines_around = " ;:,{}()[]";
+   const char *add_newlines_around = " ;:,.{}()[]<>=!+-*/&|";
+   const char *add_newlines_around_pairs[NEWLINE_PAIRS] = {
+      "==", "!=", "<=", ">=", "+=", "-=", "*=",
+      "/=", "&&", "||", "++", "--", "->"
+   };
 
    bool in_string  = false;
    bool in_tag     = s->content[0] == '#';
@@ -36,7 +40,7 @@ void String_add_newlines(String *s)
             continue; // we do not want to add newline
       }
 
-      if ( (line_count < TEXT_WIDTH) || in_tag ) {
+      if ( line_count < TEXT_WIDTH ) {
          continue;
       }
 
@@ -44,12 +48,29 @@ void String_add_newlines(String *s)
          if ( s->content[i - 1] == '\\' ) {
             continue;
          }
-         line_count = 1;
+         line_count = 2;
          String_insert(s, i, "\"\n\"");
          i += 3;
       } else if ( char_in_str(s->content[i], add_newlines_around) ||
                   char_in_str(s->content[i - 1], add_newlines_around) ) {
          line_count = 0;
+         int offset = 0;
+
+         for ( int j = 0; j < NEWLINE_PAIRS; j++ ) {
+            if ( same_str(s->content + i - 1,
+                          (char *)add_newlines_around_pairs[j]) ) {
+               offset = 1;
+               break;
+            }
+         }
+
+         i += offset;
+
+         if ( in_tag ) {
+            String_insert(s, i, (char)'\\');
+            i++;
+         }
+
          String_insert(s, i, (char)'\n');
          i++;
       }

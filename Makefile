@@ -21,7 +21,7 @@ build/lib.h.gch: src/lib.h
 build/quinify.o: src/quinify.c
 	cc -c -o $@ $<
 build/quinify: build/quinify.o build/lib.h.gch
-	cc -o $@ $< -Ibuild/
+	cc -o $@ $<
 
 build/quine.c: build/quinify src/main.c src/lib.h
 	build/quinify > build/quine.c
