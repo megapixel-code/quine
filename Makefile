@@ -16,13 +16,18 @@ build/quine2.c: build/quine1
 	$< > $@
 # end testing quine
 
-build/:
-	mkdir -p build
+build/lib.h.gch: src/lib.h
+	cc -c $< -o $@
+build/quinify.o: src/quinify.c
+	cc -c -o $@ $<
+build/quinify: build/quinify.o build/lib.h.gch
+	cc -o $@ $< -Ibuild/
 
-build/quinify.c: quinify.c
-	cp -f $< $@
-build/quine.c: build/quinify main.c
-	build/quinify main.c > build/quine.c
+build/quine.c: build/quinify src/main.c src/lib.h
+	build/quinify > build/quine.c
+
+out/quine: build/quine.o out/
+	cc -o $@ $<
 
 # from build/*.c to build/
 build/%.o: build/%.c
@@ -30,6 +35,5 @@ build/%.o: build/%.c
 build/%: build/%.o
 	cc -o $@ $<
 
-out/quine: build/quine.o
-	mkdir -p out
-	cc -o $@ $<
+%/:
+	mkdir -p $@
